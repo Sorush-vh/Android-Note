@@ -1,4 +1,4 @@
 # Android-Note
 Simple Note and Todo-list application
 Authors:
-Seyed Ali Vakilzadeh 401102789, Sina Mohammadi 40110064
+Seyed Ali Vakilzadeh 401102789, Sina Mohammadi 401110064
