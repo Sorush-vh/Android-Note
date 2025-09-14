@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  web:
+    image: python:3.12-bullseye
+    container_name: simplenote-web
+    working_dir: /app
+    volumes:
+      - .:/app                      # your code live-mounted
+      - ./docker/entrypoint.sh:/entrypoint.sh:ro
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: simplenote.settings
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - simplenote_network
+
+  db:
+    image: postgres:16
+    container_name: simplenote-db
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"                 # optional; handy for GUI clients
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - simplenote_network
+
+networks:
+  simplenote_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
